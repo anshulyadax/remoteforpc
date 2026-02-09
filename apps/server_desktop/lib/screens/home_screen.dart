@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import '../state/server_state.dart';
+import 'settings_screen.dart';
 import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
@@ -18,6 +19,18 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadNetworkInfo();
     _startServerAutomatically();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Check accessibility when screen comes into focus
+    _checkAccessibility();
+  }
+
+  Future<void> _checkAccessibility() async {
+    final serverState = context.read<ServerState>();
+    await serverState.checkAccessibilityStatus();
   }
 
   Future<void> _loadNetworkInfo() async {
@@ -46,10 +59,72 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Accessibility Permission Required'),
-        content: const Text(
-          'RemoteForPC needs accessibility permissions to control your mouse and keyboard.\n\n'
-          'Click "Open Settings" to grant permission in System Preferences.',
+        title: Row(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.orange[700],
+              size: 32,
+            ),
+            const SizedBox(width: 12),
+            const Text('Permission Required'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'RemoteForPC needs accessibility permissions to control your mouse and keyboard from your phone.',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Follow these steps:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDialogStep(1, 'Click "Open Settings" below'),
+                    _buildDialogStep(2, 'Click the lock icon 🔒'),
+                    _buildDialogStep(3, 'Enter your Mac password'),
+                    _buildDialogStep(4, 'Find "server_desktop" in the list'),
+                    _buildDialogStep(5, 'Check the box next to it'),
+                    _buildDialogStep(6, 'Return to this app'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'You only need to do this once',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -58,13 +133,62 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () async {
               final serverState = context.read<ServerState>();
               await serverState.openAccessibilityPreferences();
-              Navigator.pop(context);
+              
+              if (context.mounted) {
+                Navigator.pop(context);
+                
+                // Show follow-up snackbar
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'After granting permission, come back and start the server',
+                    ),
+                    duration: const Duration(seconds: 5),
+                    action: SnackBarAction(
+                      label: 'Check Now',
+                      onPressed: () async {
+                        await serverState.checkAccessibilityStatus();
+                        if (serverState.hasAccessibilityPermission) {
+                          await serverState.startServer();
+                        }
+                      },
+                    ),
+                  ),
+                );
+              }
             },
-            child: const Text('Open Settings'),
+            icon: const Icon(Icons.settings),
+            label: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDialogStep(int number, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 12,
+            backgroundColor: Colors.blue,
+            child: Text(
+              number.toString(),
+              style: const TextStyle(fontSize: 12, color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
         ],
       ),
@@ -80,7 +204,12 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Navigate to settings
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
             },
           ),
         ],

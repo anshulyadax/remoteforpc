@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/supabase_config.dart';
 
 /// Supabase authentication service
 class SupabaseAuthService {
@@ -27,7 +28,7 @@ class SupabaseAuthService {
     try {
       await _client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'remoteforpc://login-callback',
+        redirectTo: SupabaseConfig.redirectUrl,
       );
       return true;
     } catch (e) {
@@ -41,7 +42,7 @@ class SupabaseAuthService {
     try {
       await _client.auth.signInWithOAuth(
         OAuthProvider.github,
-        redirectTo: 'remoteforpc://login-callback',
+        redirectTo: SupabaseConfig.redirectUrl,
       );
       return true;
     } catch (e) {
@@ -55,7 +56,7 @@ class SupabaseAuthService {
     try {
       await _client.auth.signInWithOAuth(
         OAuthProvider.apple,
-        redirectTo: 'remoteforpc://login-callback',
+        redirectTo: SupabaseConfig.redirectUrl,
       );
       return true;
     } catch (e) {

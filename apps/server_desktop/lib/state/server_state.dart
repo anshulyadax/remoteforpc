@@ -38,8 +38,7 @@ class ServerState extends ChangeNotifier {
 
   Future<void> _init() async {
     // Check accessibility permissions
-    _hasAccessibilityPermission = await inputController.checkAccessibility();
-    notifyListeners();
+    await checkAccessibilityStatus();
 
     // Listen to connection events
     connectionManager.connectionEvents.listen((event) {
@@ -51,6 +50,12 @@ class ServerState extends ChangeNotifier {
     eventHandler.events.listen((event) {
       _addLog('Event: ${event.type}');
     });
+  }
+
+  /// Check accessibility status (can be called multiple times)
+  Future<void> checkAccessibilityStatus() async {
+    _hasAccessibilityPermission = await inputController.checkAccessibility();
+    notifyListeners();
   }
 
   // Getters

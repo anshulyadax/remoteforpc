@@ -5,6 +5,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:remote_protocol/remote_protocol.dart';
 import 'screens/home_screen.dart';
 import 'state/server_state.dart';
+import 'state/auth_state.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,8 +42,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ServerState(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthState()),
+        ChangeNotifierProvider(create: (_) => ServerState()),
+      ],
       child: MaterialApp(
         title: 'RemoteForPC Server',
         theme: ThemeData(

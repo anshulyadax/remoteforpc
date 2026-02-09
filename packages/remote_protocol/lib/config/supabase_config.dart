@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Supabase configuration constants
 class SupabaseConfig {
   // Environment flag - set to true for local development
@@ -17,7 +19,12 @@ class SupabaseConfig {
   
   // Deep link scheme for OAuth callbacks
   static const String redirectScheme = 'remoteforpc';
-  static const String redirectUrl = '$redirectScheme://login-callback';
+  static String get redirectUrl {
+    if (kIsWeb) {
+      return Uri.base.origin;
+    }
+    return '$redirectScheme://login-callback';
+  }
   
   // Realtime channel prefix for remote control
   static const String channelPrefix = 'remote:';
