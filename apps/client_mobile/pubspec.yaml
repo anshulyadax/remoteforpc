@@ -51,7 +51,7 @@ dependencies:
   
   # Mobile features
   wakelock_plus: ^1.1.0
-  vibration: ^1.8.0
+  # vibration: ^1.8.0  # Temporarily removed due to Flutter v1 embedding compatibility
   permission_handler: ^11.0.0
   
   # Storage & Settings

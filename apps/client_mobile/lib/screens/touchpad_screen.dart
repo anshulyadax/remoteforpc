@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vibration/vibration.dart';
+// import 'package:vibration/vibration.dart';  // Removed for compatibility
 import '../state/client_state.dart';
 import '../widgets/touchpad_surface.dart';
 import 'package:remote_protocol/remote_protocol.dart';
@@ -187,13 +187,14 @@ class _TouchpadScreenState extends State<TouchpadScreen> {
     final clientState = context.read<ClientState>();
 
     // Haptic feedback
-    if (clientState.hapticFeedback) {
-      Vibration.hasVibrator().then((hasVibrator) {
-        if (hasVibrator == true) {
-          Vibration.vibrate(duration: 10);
-        }
-      });
-    }
+    // Temporarily disabled due to vibration plugin compatibility
+    // if (clientState.hapticFeedback) {
+    //   Vibration.hasVibrator().then((hasVibrator) {
+    //     if (hasVibrator == true) {
+    //       Vibration.vibrate(duration: 10);
+    //     }
+    //   });
+    // }
 
     // Send mouse down
     await clientState.sendMouseClick(button, ActionType.down);

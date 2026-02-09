@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:remote_protocol/remote_protocol.dart';
+import 'screens/login_screen.dart';
 import 'screens/connection_screen.dart';
+import 'state/auth_state.dart';
 import 'state/client_state.dart';
 
 Future<void> main() async {
@@ -27,10 +29,11 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ClientState(),
+  @overrideMultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthState()),
+        ChangeNotifierProvider(create: (_) => ClientState()),
+      ],
       child: MaterialApp(
         title: 'RemoteForPC',
         theme: ThemeData(
@@ -39,7 +42,27 @@ class MyApp extends StatelessWidget {
         ),
         darkTheme: ThemeData.dark(useMaterial3: true),
         themeMode: ThemeMode.system,
-        home: const ConnectionScreen(),
+        home: const AuthWrapper(),
+        debugShowCheckedModeBanner: false,
+      ),
+    );
+  }
+}
+
+/// Wrapper to handle authentication state routing
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AuthState>(
+      builder: (context, authState, _) {
+        // Check if user is authenticated on app start
+        final isAuthenticated = authState.isAuthenticated;
+
+        // Show login screen if not authenticated, otherwise connection screen
+        return isAuthenticated ? const ConnectionScreen() : const LoginScreen();
+      } home: const ConnectionScreen(),
         debugShowCheckedModeBanner: false,
       ),
     );
