@@ -29,9 +29,11 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @overrideMultiProvider(
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthState()),
+        ChangeNotifierProvider(create: (_) => AppAuthState()),
         ChangeNotifierProvider(create: (_) => ClientState()),
       ],
       child: MaterialApp(
@@ -55,16 +57,14 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthState>(
+    return Consumer<AppAuthState>(
       builder: (context, authState, _) {
         // Check if user is authenticated on app start
         final isAuthenticated = authState.isAuthenticated;
 
         // Show login screen if not authenticated, otherwise connection screen
         return isAuthenticated ? const ConnectionScreen() : const LoginScreen();
-      } home: const ConnectionScreen(),
-        debugShowCheckedModeBanner: false,
-      ),
+      },
     );
   }
 }

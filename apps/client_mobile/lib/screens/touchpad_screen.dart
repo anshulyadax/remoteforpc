@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 // import 'package:vibration/vibration.dart';  // Removed for compatibility
 import '../state/client_state.dart';
+import '../state/auth_state.dart';
 import '../widgets/touchpad_surface.dart';
+import 'account_settings_screen.dart';
 import 'package:remote_protocol/remote_protocol.dart';
 
 class TouchpadScreen extends StatefulWidget {
@@ -27,6 +29,42 @@ class _TouchpadScreenState extends State<TouchpadScreen> {
           },
         ),
         actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle),
+            onSelected: (value) async {
+              if (value == 'account') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AccountSettingsScreen()),
+                );
+              } else if (value == 'logout') {
+                await context.read<AppAuthState>().signOut();
+                if (!context.mounted) return;
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'account',
+                child: Row(
+                  children: [
+                    Icon(Icons.manage_accounts_outlined),
+                    SizedBox(width: 8),
+                    Text('Account settings'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout),
+                    SizedBox(width: 8),
+                    Text('Sign out'),
+                  ],
+                ),
+              ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -36,6 +74,8 @@ class _TouchpadScreenState extends State<TouchpadScreen> {
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () async {
+              final navigator = Navigator.of(context);
+              final clientState = context.read<ClientState>();
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -54,11 +94,12 @@ class _TouchpadScreenState extends State<TouchpadScreen> {
                 ),
               );
 
-              if (confirmed == true && mounted) {
-                await context.read<ClientState>().disconnect();
-                if (mounted) {
-                  Navigator.of(context).pop();
-                }
+              if (!context.mounted) return;
+
+              if (confirmed == true) {
+                await clientState.disconnect();
+                if (!context.mounted) return;
+                navigator.pop();
               }
             },
           ),
@@ -89,7 +130,7 @@ class _TouchpadScreenState extends State<TouchpadScreen> {
               color: Theme.of(context).colorScheme.surfaceContainer,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),

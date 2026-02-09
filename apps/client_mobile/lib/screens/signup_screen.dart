@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/auth_state.dart';
-import 'connection_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -29,36 +28,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authState = context.read<AuthState>();
+    final authState = context.read<AppAuthState>();
     final success = await authState.signUpWithEmail(
       _emailController.text,
       _passwordController.text,
     );
 
     if (success && mounted) {
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created! Please check your email to verify.'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (authState.requiresEmailConfirmation) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account created! Please verify your email, then sign in.')),
+        );
+        Navigator.of(context).pop();
+        return;
+      }
 
-      // Navigate to connection screen
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ConnectionScreen()),
-      );
+      // If a session is established, AuthWrapper will switch screens.
+      Navigator.of(context).pop();
     }
   }
 
   Future<void> _handleGoogleSignUp() async {
-    final authState = context.read<AuthState>();
+    final authState = context.read<AppAuthState>();
     final success = await authState.signInWithGoogle();
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ConnectionScreen()),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Complete sign-in and return to the app.')),
       );
+      Navigator.of(context).pop();
     }
   }
 
@@ -72,7 +70,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Consumer<AuthState>(
+            child: Consumer<AppAuthState>(
               builder: (context, authState, _) {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/auth_state.dart';
 import 'signup_screen.dart';
-import 'connection_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,39 +26,78 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleEmailLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authState = context.read<AuthState>();
+    final authState = context.read<AppAuthState>();
     final success = await authState.signInWithEmail(
       _emailController.text,
       _passwordController.text,
     );
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ConnectionScreen()),
-      );
+      // AuthWrapper will switch screens once the session is established.
+      FocusScope.of(context).unfocus();
     }
   }
 
   Future<void> _handleGoogleLogin() async {
-    final authState = context.read<AuthState>();
+    final authState = context.read<AppAuthState>();
     final success = await authState.signInWithGoogle();
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ConnectionScreen()),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Complete sign-in and return to the app.')),
       );
     }
   }
 
   Future<void> _handleAnonymousLogin() async {
-    final authState = context.read<AuthState>();
+    final authState = context.read<AppAuthState>();
     final success = await authState.signInAnonymously();
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ConnectionScreen()),
-      );
+      FocusScope.of(context).unfocus();
     }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final emailController = TextEditingController(text: _emailController.text.trim());
+    final authState = context.read<AppAuthState>();
+
+    final shouldSend = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset password'),
+        content: TextField(
+          controller: emailController,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            border: OutlineInputBorder(),
+          ),
+          enabled: !authState.isLoading,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Send link'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSend != true || !mounted) return;
+
+    final ok = await authState.resetPassword(emailController.text);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ok ? 'Password reset email sent.' : (authState.errorMessage ?? 'Failed to send reset email.')),
+      ),
+    );
   }
 
   @override
@@ -69,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Consumer<AuthState>(
+            child: Consumer<AppAuthState>(
               builder: (context, authState, _) {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -201,14 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: authState.isLoading ? null : () {
-                          // TODO: Implement forgot password
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Password reset feature coming soon'),
-                            ),
-                          );
-                        },
+                        onPressed: authState.isLoading ? null : _handleForgotPassword,
                         child: const Text('Forgot Password?'),
                       ),
                     ),

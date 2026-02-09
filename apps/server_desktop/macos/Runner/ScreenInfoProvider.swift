@@ -9,9 +9,7 @@ class ScreenInfoProvider {
         var result: [[String: Any]] = []
         
         // Get all screens
-        guard let screens = NSScreen.screens as? [NSScreen] else {
-            return result
-        }
+        let screens = NSScreen.screens
         
         for (index, screen) in screens.enumerated() {
             let frame = screen.frame
@@ -56,8 +54,8 @@ class ScreenInfoProvider {
     
     /// Get screen bounds for a specific screen ID
     func getScreenBounds(screenId: Int) -> CGRect? {
-        guard let screens = NSScreen.screens as? [NSScreen],
-              screenId < screens.count else {
+        let screens = NSScreen.screens
+        guard screenId < screens.count else {
             return nil
         }
         

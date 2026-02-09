@@ -3,6 +3,7 @@ library remote_protocol;
 // Models
 export 'models/events.dart';
 export 'models/connection.dart';
+export 'models/user_profile.dart';
 
 // Protocol
 export 'protocol/command_types.dart';

@@ -162,13 +162,13 @@ class _TouchpadSurfaceState extends State<TouchpadSurface> {
                   Icon(
                     Icons.touch_app,
                     size: 48,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Move your finger to control the mouse',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -176,7 +176,7 @@ class _TouchpadSurfaceState extends State<TouchpadSurface> {
                     'Tap to click • Two fingers to scroll',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                     ),
                   ),
                 ],

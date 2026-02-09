@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/auth_state.dart';
 import '../state/client_state.dart';
-import 'login_screen.dart';
+import 'account_settings_screen.dart';
 import 'touchpad_screen.dart';
 
 class ConnectionScreen extends StatefulWidget {
@@ -65,24 +65,28 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('RemoteForPC'),
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.account_circle),
             onSelected: (value) async {
-              if (value == 'profile') {
-                _showProfile(context);
+              if (value == 'account') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AccountSettingsScreen()),
+                );
               } else if (value == 'logout') {
                 await _handleLogout(context);
               }
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
-                value: 'profile',
+                value: 'account',
                 child: Row(
                   children: [
-                    Icon(Icons.person),
+                    Icon(Icons.manage_accounts_outlined),
                     SizedBox(width: 8),
-                    Text('Profile'),
+                    Text('Account settings'),
                   ],
                 ),
               ),
@@ -99,8 +103,6 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
             ],
           ),
         ],
-      appBar: AppBar(
-        title: const Text('RemoteForPC'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -209,5 +211,35 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final authState = context.read<AppAuthState>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (!context.mounted) return;
+
+    if (confirmed == true) {
+      await authState.signOut();
+      if (!context.mounted) return;
+      navigator.popUntil((route) => route.isFirst);
+    }
   }
 }

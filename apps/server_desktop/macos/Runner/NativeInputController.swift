@@ -1,6 +1,5 @@
 import Cocoa
 import CoreGraphics
-import FlutterMacOS
 
 /// Native input controller for macOS using Core Graphics events
 class NativeInputController {
@@ -15,7 +14,6 @@ class NativeInputController {
         let currentY = screenHeight - currentLocation.y
         let newX = currentLocation.x + CGFloat(dx)
         let newY = currentY + CGFloat(dy)
-        let flippedY = screenHeight - newY
         
         // Create and post mouse move event
         if let event = CGEvent(mouseEventSource: nil,

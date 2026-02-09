@@ -14,7 +14,6 @@ class WebSocketClient {
   final StreamController<HandshakeResponse> _handshakeController =
       StreamController<HandshakeResponse>.broadcast();
   
-  ConnectionStatus _currentStatus = ConnectionStatus.disconnected;
   Timer? _pingTimer;
 
   WebSocketClient({
@@ -167,7 +166,6 @@ class WebSocketClient {
 
   /// Update connection status
   void _updateStatus(ConnectionStatus status) {
-    _currentStatus = status;
     _statusController.add(status);
   }
 
