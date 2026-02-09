@@ -67,7 +67,7 @@ dependencies:
   # UUID generation
   uuid: ^4.0.0
   
-  # Supabase (auth + realtime relay)
+  # Neon auth + realtime relay
   supabase_flutter: ^2.0.0
 
 dev_dependencies:

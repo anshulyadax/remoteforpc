@@ -62,9 +62,7 @@ remoteforpc/
 │   └── client_mobile/       # iOS/Android client
 ├── packages/
 │   └── remote_protocol/     # Shared protocol & crypto
-├── supabase/
-│   ├── functions/           # Edge Functions (relay)
-│   └── migrations/          # Database schema
+├── backend/                 # Cloud auth + relay backend config
 └── melos.yaml              # Monorepo config
 ```
 

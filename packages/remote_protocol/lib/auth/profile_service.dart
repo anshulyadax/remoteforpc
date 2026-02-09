@@ -1,10 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_profile.dart';
 
-/// Service for managing user profiles in Supabase database
+/// Service for managing user profiles in Neon-backed database
 /// 
 /// This service handles all CRUD operations for user profiles stored in the
-/// Supabase 'profiles' table. Profiles are automatically created via a database
+/// 'profiles' table. Profiles are automatically created via a database
 /// trigger when a user signs up (see migration 20260209000001_create_profiles_table.sql).
 /// 
 /// The profiles table structure:

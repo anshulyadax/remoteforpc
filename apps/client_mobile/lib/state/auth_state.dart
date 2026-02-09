@@ -4,19 +4,19 @@ import 'package:remote_protocol/remote_protocol.dart';
 
 /// Authentication state management
 /// 
-/// This class manages user authentication and profile data using Supabase.
+/// This class manages user authentication and profile data using Neon auth.
 /// It handles:
 /// - Email/password authentication
 /// - OAuth (Google, etc.)
 /// - Anonymous authentication (for LAN-only mode)
-/// - Profile management (stored in Supabase profiles table)
+/// - Profile management (stored in profiles table)
 /// - Session management
 /// 
-/// Profile data is stored in the Supabase 'profiles' table and synced with
+/// Profile data is stored in the 'profiles' table and synced with
 /// user metadata for consistency. The ProfileService handles all database
 /// operations for profiles.
 class AppAuthState extends ChangeNotifier {
-  final SupabaseAuthService _authService;
+  final NeonAuthService _authService;
   final ProfileService _profileService;
   User? _currentUser;
   Session? _currentSession;
@@ -26,7 +26,7 @@ class AppAuthState extends ChangeNotifier {
   bool _requiresEmailConfirmation = false;
 
   AppAuthState() 
-      : _authService = SupabaseAuthService(Supabase.instance.client),
+      : _authService = NeonAuthService(Supabase.instance.client),
         _profileService = ProfileService(Supabase.instance.client) {
     _currentUser = _authService.currentUser;
     _currentSession = _authService.currentSession;
@@ -58,7 +58,7 @@ class AppAuthState extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   /// Auth service getter
-  SupabaseAuthService get authService => _authService;
+  NeonAuthService get authService => _authService;
 
   /// Listen to auth state changes
   void _listenToAuthChanges() {
@@ -178,7 +178,7 @@ class AppAuthState extends ChangeNotifier {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: SupabaseConfig.redirectUrl,
+        redirectTo: NeonAuthConfig.redirectUrl,
       );
       _isLoading = false;
       notifyListeners();
@@ -206,7 +206,7 @@ class AppAuthState extends ChangeNotifier {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.github,
-        redirectTo: SupabaseConfig.redirectUrl,
+        redirectTo: NeonAuthConfig.redirectUrl,
       );
       _isLoading = false;
       notifyListeners();

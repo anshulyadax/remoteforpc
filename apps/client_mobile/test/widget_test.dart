@@ -5,14 +5,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:client_mobile/main.dart';
 
-Future<void> _ensureSupabaseInitialized() async {
+Future<void> _ensureAuthClientInitialized() async {
   try {
     Supabase.instance.client;
     return;
   } catch (_) {
     await Supabase.initialize(
-      url: SupabaseConfig.supabaseUrl,
-      anonKey: SupabaseConfig.supabaseAnonKey,
+      url: NeonAuthConfig.authUrl,
+      anonKey: NeonAuthConfig.anonKey,
     );
   }
 }
@@ -22,7 +22,7 @@ void main() {
 
   setUpAll(() async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
-    await _ensureSupabaseInitialized();
+    await _ensureAuthClientInitialized();
   });
 
   testWidgets('shows login UI when unauthenticated', (WidgetTester tester) async {

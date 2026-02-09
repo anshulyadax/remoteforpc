@@ -18,7 +18,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadNetworkInfo();
-    _startServerAutomatically();
+    // Use post-frame callback to show dialog after widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startServerAutomatically();
+    });
   }
 
   @override

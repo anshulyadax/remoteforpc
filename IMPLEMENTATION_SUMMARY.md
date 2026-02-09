@@ -159,7 +159,7 @@ A complete 3-mode remote control system built with Flutter, allowing mobile devi
 #### 5. **Supabase Integration**
 
 - ✅ **Configuration** (`SupabaseConfig`)
-  - Project URL: `https://hebcaaswkwvmpnhjakxe.supabase.co`
+  - Project URL: `<removed>`
   - Anon key configured
   - Deep link scheme: `remoteforpc://login-callback`
 
@@ -329,12 +329,12 @@ flutter run -d <your-iphone-name>
 
 ### **1. Dashboard Configuration**
 
-Go to: https://supabase.com/dashboard/project/hebcaaswkwvmpnhjakxe
+Go to: your auth provider dashboard
 
 #### **A. Enable OAuth Providers**
 - **Navigation**: Authentication → Providers
 - **Enable**: Google, GitHub, Apple
-- **Callback URL**: `https://hebcaaswkwvmpnhjakxe.supabase.co/auth/v1/callback`
+- **Callback URL**: `<removed>`
 
 #### **B. Configure GitHub OAuth**
 1. Go to GitHub → Settings → Developer Settings → OAuth Apps

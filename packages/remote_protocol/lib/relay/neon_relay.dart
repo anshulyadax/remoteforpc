@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Supabase Realtime relay for remote control over internet
-class SupabaseRelay {
+/// Neon realtime relay for remote control over internet
+class NeonRelay {
   final SupabaseClient _client;
   final String deviceId;
   final bool isServer;
@@ -11,7 +11,7 @@ class SupabaseRelay {
   final StreamController<Map<String, dynamic>> _messageController =
       StreamController<Map<String, dynamic>>.broadcast();
 
-  SupabaseRelay({
+  NeonRelay({
     required SupabaseClient client,
     required this.deviceId,
     required this.isServer,

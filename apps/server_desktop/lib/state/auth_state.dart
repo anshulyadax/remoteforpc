@@ -4,8 +4,8 @@ import 'package:remote_protocol/remote_protocol.dart';
 
 /// Authentication state manager
 class AuthState extends ChangeNotifier {
-  final SupabaseClient _supabase = Supabase.instance.client;
-  late final ProfileService _profileService = ProfileService(_supabase);
+  final SupabaseClient _authClient = Supabase.instance.client;
+  late final ProfileService _profileService = ProfileService(_authClient);
   
   User? _user;
   UserProfile? _profile;
@@ -25,7 +25,7 @@ class AuthState extends ChangeNotifier {
 
   Future<void> _init() async {
     // Listen to auth state changes
-    _supabase.auth.onAuthStateChange.listen((data) {
+    _authClient.auth.onAuthStateChange.listen((data) {
       _user = data.session?.user;
       if (_user != null) {
         _loadProfile();
@@ -36,7 +36,7 @@ class AuthState extends ChangeNotifier {
     });
 
     // Check current session
-    final session = _supabase.auth.currentSession;
+    final session = _authClient.auth.currentSession;
     if (session != null) {
       _user = session.user;
       await _loadProfile();
@@ -61,7 +61,7 @@ class AuthState extends ChangeNotifier {
     _error = null;
 
     try {
-      final response = await _supabase.auth.signInWithPassword(
+      final response = await _authClient.auth.signInWithPassword(
         email: email,
         password: password,
       );
@@ -89,7 +89,7 @@ class AuthState extends ChangeNotifier {
 
     try {
       // Sign up user
-      final response = await _supabase.auth.signUp(
+      final response = await _authClient.auth.signUp(
         email: email,
         password: password,
       );
@@ -123,7 +123,7 @@ class AuthState extends ChangeNotifier {
     _setLoading(true);
     
     try {
-      await _supabase.auth.signOut();
+      await _authClient.auth.signOut();
       _user = null;
       _profile = null;
       _error = null;
@@ -140,9 +140,9 @@ class AuthState extends ChangeNotifier {
     _error = null;
 
     try {
-      await _supabase.auth.signInWithOAuth(
+      await _authClient.auth.signInWithOAuth(
         OAuthProvider.github,
-        redirectTo: SupabaseConfig.redirectUrl,
+        redirectTo: NeonAuthConfig.redirectUrl,
       );
       _setLoading(false);
       return true;
@@ -186,7 +186,7 @@ class AuthState extends ChangeNotifier {
     _error = null;
 
     try {
-      await _supabase.auth.updateUser(
+      await _authClient.auth.updateUser(
         UserAttributes(password: newPassword),
       );
       
@@ -205,7 +205,7 @@ class AuthState extends ChangeNotifier {
     _error = null;
 
     try {
-      await _supabase.auth.resetPasswordForEmail(email);
+      await _authClient.auth.resetPasswordForEmail(email);
       _setLoading(false);
       return true;
     } catch (e) {

@@ -17,10 +17,10 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize Supabase with credentials
+  // Initialize Neon auth client
   await Supabase.initialize(
-    url: SupabaseConfig.supabaseUrl,
-    anonKey: SupabaseConfig.supabaseAnonKey,
+    url: NeonAuthConfig.authUrl,
+    anonKey: NeonAuthConfig.anonKey,
   );
 
   runApp(const MyApp());

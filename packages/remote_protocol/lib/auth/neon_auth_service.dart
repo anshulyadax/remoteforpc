@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../config/supabase_config.dart';
+import '../config/neon_auth_config.dart';
 
-/// Supabase authentication service
-class SupabaseAuthService {
+/// Neon authentication service
+class NeonAuthService {
   final SupabaseClient _client;
   
-  SupabaseAuthService(this._client);
+  NeonAuthService(this._client);
 
-  /// Get the Supabase client
+  /// Get the Neon auth client
   SupabaseClient get client => _client;
 
   /// Get current user
@@ -28,7 +28,7 @@ class SupabaseAuthService {
     try {
       await _client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: SupabaseConfig.redirectUrl,
+        redirectTo: NeonAuthConfig.redirectUrl,
       );
       return true;
     } catch (e) {
@@ -42,7 +42,7 @@ class SupabaseAuthService {
     try {
       await _client.auth.signInWithOAuth(
         OAuthProvider.github,
-        redirectTo: SupabaseConfig.redirectUrl,
+        redirectTo: NeonAuthConfig.redirectUrl,
       );
       return true;
     } catch (e) {
@@ -56,7 +56,7 @@ class SupabaseAuthService {
     try {
       await _client.auth.signInWithOAuth(
         OAuthProvider.apple,
-        redirectTo: SupabaseConfig.redirectUrl,
+        redirectTo: NeonAuthConfig.redirectUrl,
       );
       return true;
     } catch (e) {

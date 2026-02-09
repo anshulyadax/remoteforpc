@@ -12,12 +12,12 @@ export 'protocol/command_types.dart';
 export 'utils/coordinate_transform.dart';
 
 // Auth
-export 'auth/supabase_auth_service.dart';
+export 'auth/neon_auth_service.dart';
 export 'auth/profile_service.dart';
 
 // Relay
-export 'relay/supabase_relay.dart';
+export 'relay/neon_relay.dart';
 
 // Config
-export 'config/supabase_config.dart';
+export 'config/neon_auth_config.dart';
 
