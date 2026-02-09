@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:remote_protocol/remote_protocol.dart';
 
 /// Authentication state management
@@ -18,16 +18,16 @@ import 'package:remote_protocol/remote_protocol.dart';
 class AppAuthState extends ChangeNotifier {
   final NeonAuthService _authService;
   final ProfileService _profileService;
-  User? _currentUser;
-  Session? _currentSession;
+  NeonUser? _currentUser;
+  NeonSession? _currentSession;
   UserProfile? _userProfile;
   bool _isLoading = false;
   String? _errorMessage;
   bool _requiresEmailConfirmation = false;
 
   AppAuthState() 
-      : _authService = NeonAuthService(Supabase.instance.client),
-        _profileService = ProfileService(Supabase.instance.client) {
+      : _authService = NeonAuthService(NeonRuntime.client),
+        _profileService = ProfileService(NeonRuntime.client) {
     _currentUser = _authService.currentUser;
     _currentSession = _authService.currentSession;
     _listenToAuthChanges();
@@ -37,10 +37,10 @@ class AppAuthState extends ChangeNotifier {
   }
 
   /// Current user
-  User? get currentUser => _currentUser;
+  NeonUser? get currentUser => _currentUser;
 
   /// Current session
-  Session? get currentSession => _currentSession;
+  NeonSession? get currentSession => _currentSession;
 
   /// User profile
   UserProfile? get userProfile => _userProfile;
@@ -89,7 +89,7 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await Supabase.instance.client.auth.signInWithPassword(
+      final response = await NeonRuntime.client.auth.signInWithPassword(
         email: email.trim(),
         password: password,
       );
@@ -104,7 +104,7 @@ class AppAuthState extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return true;
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       if (e.message.toLowerCase().contains('invalid') || 
           e.message.toLowerCase().contains('credentials')) {
         _errorMessage = 'Invalid email or password. Please try again.';
@@ -132,7 +132,7 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await Supabase.instance.client.auth.signUp(
+      final response = await NeonRuntime.client.auth.signUp(
         email: email.trim(),
         password: password,
       );
@@ -151,7 +151,7 @@ class AppAuthState extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return true;
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       if (e.message.toLowerCase().contains('already registered')) {
         _errorMessage = 'This email is already registered. Please sign in instead.';
       } else {
@@ -176,14 +176,14 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.google,
+      await NeonRuntime.signInWithOAuth(
+        provider: NeonOAuthProvider.google,
         redirectTo: NeonAuthConfig.redirectUrl,
       );
       _isLoading = false;
       notifyListeners();
       return true;
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       _errorMessage = e.message;
       _isLoading = false;
       notifyListeners();
@@ -204,14 +204,14 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.github,
+      await NeonRuntime.signInWithOAuth(
+        provider: NeonOAuthProvider.github,
         redirectTo: NeonAuthConfig.redirectUrl,
       );
       _isLoading = false;
       notifyListeners();
       return true;
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       _errorMessage = e.message;
       _isLoading = false;
       notifyListeners();
@@ -232,13 +232,13 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await Supabase.instance.client.auth.signInAnonymously();
+      final response = await NeonRuntime.client.auth.signInAnonymously();
       _currentSession = response.session;
       _currentUser = response.session?.user;
       _isLoading = false;
       notifyListeners();
       return true;
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       _errorMessage = e.message;
       _isLoading = false;
       notifyListeners();
@@ -276,11 +276,11 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Supabase.instance.client.auth.resetPasswordForEmail(email.trim());
+      await NeonRuntime.client.auth.resetPasswordForEmail(email.trim());
       _isLoading = false;
       notifyListeners();
       return true;
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       _errorMessage = e.message;
       _isLoading = false;
       notifyListeners();
@@ -299,13 +299,13 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Supabase.instance.client.auth.updateUser(
-        UserAttributes(email: email.trim()),
+      await NeonRuntime.client.auth.updateUser(
+        NeonUserAttributes(email: email.trim()),
       );
       _isLoading = false;
       notifyListeners();
       return true;
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       _errorMessage = e.message;
       _isLoading = false;
       notifyListeners();
@@ -324,13 +324,13 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Supabase.instance.client.auth.updateUser(
-        UserAttributes(password: password),
+      await NeonRuntime.client.auth.updateUser(
+        NeonUserAttributes(password: password),
       );
       _isLoading = false;
       notifyListeners();
       return true;
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       _errorMessage = e.message;
       _isLoading = false;
       notifyListeners();
@@ -414,8 +414,8 @@ class AppAuthState extends ChangeNotifier {
         if (phoneNumber != null) metadata['phone_number'] = phoneNumber;
 
         try {
-          await Supabase.instance.client.auth.updateUser(
-            UserAttributes(data: metadata),
+          await NeonRuntime.client.auth.updateUser(
+            NeonUserAttributes(data: metadata),
           );
         } catch (e) {
           print('Warning: Failed to update user metadata: $e');
@@ -431,7 +431,7 @@ class AppAuthState extends ChangeNotifier {
         notifyListeners();
         return false;
       }
-    } on AuthException catch (e) {
+    } on NeonAuthException catch (e) {
       _errorMessage = e.message;
       _isLoading = false;
       notifyListeners();

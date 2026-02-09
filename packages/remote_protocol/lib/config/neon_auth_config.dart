@@ -8,6 +8,9 @@ import 'package:flutter/foundation.dart';
 /// 
 /// Architecture:
 /// Your App (SDK) -> Neon Auth Service (REST API) -> Your Neon Database (neon_auth schema)
+/// 
+/// NOTE: Supabase has been removed from this project. This configuration is kept
+/// for reference but may need updates for direct Neon Auth implementation.
 class NeonAuthConfig {
   // Environment flag - set to true for local development
   static const bool useLocalNeon = false;
@@ -15,7 +18,7 @@ class NeonAuthConfig {
   // Neon cloud configuration. Keep credentials outside source control.
   // Base URL for authentication (Neon Auth REST API)
   static const String _productionUrl = String.fromEnvironment(
-    'NEON_APP_URL',
+    'NEON_URL',
     defaultValue: 'https://ep-dawn-snow-aichjaw3.neonauth.c-4.us-east-1.aws.neon.tech/neondb',
   );
   // API key for authentication (obtained from Neon Console)
@@ -26,7 +29,7 @@ class NeonAuthConfig {
   
   // Local auth project configuration (development only)
   static const String _localUrl = 'http://127.0.0.1:54321';
-  static const String _localAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+  static const String _localAnonKey = 'local-dev-key';
   
   // Neon Auth endpoints
   // REST API endpoint for authentication operations (sign-in, sign-up, OAuth)
@@ -48,6 +51,15 @@ class NeonAuthConfig {
   // Project information
   static const String neonOrg = 'org-mute-silence-09730628';
   static const String neonProject = 'damp-unit-14958113';
+  
+  // Database schema where auth data is stored
+  // All authentication data (users, sessions, OAuth configs) lives here
+  // You can query these tables directly with SQL:
+  // - neon_auth.user
+  // - neon_auth.session
+  // - neon_auth.account
+  // - neon_auth.verification
+  static const String authSchema = 'neon_auth';
   
   // Active configuration based on environment
   static String get authUrl => useLocalNeon ? _localUrl : _productionUrl;

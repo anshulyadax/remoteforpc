@@ -1,13 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:remote_protocol/remote_protocol.dart';
 
 /// Authentication state manager
 class AuthState extends ChangeNotifier {
-  final SupabaseClient _authClient = Supabase.instance.client;
+  final NeonClient _authClient = NeonRuntime.client;
   late final ProfileService _profileService = ProfileService(_authClient);
   
-  User? _user;
+  NeonUser? _user;
   UserProfile? _profile;
   bool _isLoading = false;
   String? _error;
@@ -17,7 +16,7 @@ class AuthState extends ChangeNotifier {
   }
 
   // Getters
-  User? get user => _user;
+  NeonUser? get user => _user;
   UserProfile? get profile => _profile;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -140,8 +139,8 @@ class AuthState extends ChangeNotifier {
     _error = null;
 
     try {
-      await _authClient.auth.signInWithOAuth(
-        OAuthProvider.github,
+      await NeonRuntime.signInWithOAuth(
+        provider: NeonOAuthProvider.github,
         redirectTo: NeonAuthConfig.redirectUrl,
       );
       _setLoading(false);
@@ -187,7 +186,7 @@ class AuthState extends ChangeNotifier {
 
     try {
       await _authClient.auth.updateUser(
-        UserAttributes(password: newPassword),
+        NeonUserAttributes(password: newPassword),
       );
       
       _setLoading(false);
@@ -221,7 +220,7 @@ class AuthState extends ChangeNotifier {
   }
 
   String _formatError(dynamic error) {
-    if (error is AuthException) {
+    if (error is NeonAuthException) {
       return error.message;
     }
     return error.toString();

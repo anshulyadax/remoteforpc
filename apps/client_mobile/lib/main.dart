@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:remote_protocol/remote_protocol.dart';
 import 'screens/login_screen.dart';
 import 'screens/connection_screen.dart';
@@ -18,7 +18,7 @@ Future<void> main() async {
   ]);
 
   // Initialize Neon auth client
-  await Supabase.initialize(
+  await NeonRuntime.initialize(
     url: NeonAuthConfig.authUrl,
     anonKey: NeonAuthConfig.anonKey,
   );

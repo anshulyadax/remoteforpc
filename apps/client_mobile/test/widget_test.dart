@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:remote_protocol/remote_protocol.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 import 'package:client_mobile/main.dart';
 
 Future<void> _ensureAuthClientInitialized() async {
   try {
-    Supabase.instance.client;
+    NeonRuntime.client;
     return;
   } catch (_) {
-    await Supabase.initialize(
+    await NeonRuntime.initialize(
       url: NeonAuthConfig.authUrl,
       anonKey: NeonAuthConfig.anonKey,
     );

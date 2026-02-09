@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:window_manager/window_manager.dart';
 import 'package:remote_protocol/remote_protocol.dart';
 import 'screens/home_screen.dart';
@@ -29,7 +29,7 @@ Future<void> main() async {
   });
 
   // Initialize Neon auth client
-  await Supabase.initialize(
+  await NeonRuntime.initialize(
     url: NeonAuthConfig.authUrl,
     anonKey: NeonAuthConfig.anonKey,
   );

@@ -1,80 +1,45 @@
 import 'dart:async';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../auth/neon_runtime.dart';
 
 /// Neon realtime relay for remote control over internet
+/// 
+/// NOTE: Supabase has been removed. This is a placeholder implementation.
+/// Realtime functionality will need to be reimplemented using WebSocket or alternative solution.
 class NeonRelay {
-  final SupabaseClient _client;
+  final NeonClient _client;
   final String deviceId;
   final bool isServer;
   
-  RealtimeChannel? _channel;
   final StreamController<Map<String, dynamic>> _messageController =
       StreamController<Map<String, dynamic>>.broadcast();
 
   NeonRelay({
-    required SupabaseClient client,
+    required NeonClient client,
     required this.deviceId,
     required this.isServer,
   }) : _client = client;
 
   /// Connect to relay channel
   Future<void> connect() async {
-    final channelName = 'remote:$deviceId';
-    
-    _channel = _client.channel(channelName);
-
-    // Listen for broadcast messages
-    _channel!.onBroadcast(
-      event: 'command',
-      callback: (payload) {
-        _messageController.add(Map<String, dynamic>.from(payload));
-      },
-    );
-
-    // Subscribe to channel
-    await _channel!.subscribe((status, error) {
-      if (status == RealtimeSubscribeStatus.subscribed) {
-        print('Connected to relay channel: $channelName');
-        
-        // Track presence
-        _channel!.track({
-          'deviceId': deviceId,
-          'type': isServer ? 'server' : 'client',
-          'online': true,
-          'timestamp': DateTime.now().toIso8601String(),
-        });
-      } else if (error != null) {
-        print('Error subscribing to channel: $error');
-      }
-    });
+    print('Relay functionality removed - Supabase dependency eliminated');
   }
 
   /// Disconnect from relay channel
   Future<void> disconnect() async {
-    if (_channel != null) {
-      await _channel!.untrack();
-      await _client.removeChannel(_channel!);
-      _channel = null;
-    }
+    print('Relay functionality removed - Supabase dependency eliminated');
   }
 
   /// Send command through relay
   Future<void> sendCommand(Map<String, dynamic> command) async {
-    if (_channel == null) {
-      throw Exception('Not connected to relay channel');
-    }
-
-    await _channel!.sendBroadcastMessage(
-      event: 'command',
-      payload: command,
-    );
+    print('Relay functionality removed - Supabase dependency eliminated');
+    throw Exception('Relay not available - Supabase removed');
   }
 
   /// Stream of incoming messages
   Stream<Map<String, dynamic>> get messages => _messageController.stream;
 
   /// Check if connected
-  bool get isConnected => _channel != null;
+  bool get isConnected => false;
 
   /// Dispose resources
   void dispose() {
