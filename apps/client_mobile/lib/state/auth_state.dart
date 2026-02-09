@@ -196,6 +196,34 @@ class AppAuthState extends ChangeNotifier {
     }
   }
 
+  /// Sign in with GitHub
+  Future<bool> signInWithGitHub() async {
+    _isLoading = true;
+    _errorMessage = null;
+    _requiresEmailConfirmation = false;
+    notifyListeners();
+
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.github,
+        redirectTo: SupabaseConfig.redirectUrl,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'Failed to sign in with GitHub';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Sign in anonymously (for LAN-only mode)
   Future<bool> signInAnonymously() async {
     _isLoading = true;

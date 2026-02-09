@@ -5,7 +5,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:remote_protocol/remote_protocol.dart';
 import 'screens/home_screen.dart';
 import 'state/server_state.dart';
-import 'state/auth_state.dart';
+import 'state/auth_state.dart' as app_state;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthState()),
+        ChangeNotifierProvider(create: (_) => app_state.AuthState()),
         ChangeNotifierProvider(create: (_) => ServerState()),
       ],
       child: MaterialApp(

@@ -225,6 +225,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 24),
 
+                    OutlinedButton.icon(
+                      onPressed: authState.isLoading ? null : _handleGitHubAuth,
+                      icon: const Icon(Icons.code),
+                      label: Text(
+                        _isLogin
+                            ? 'Continue with GitHub'
+                            : 'Sign up with GitHub',
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
                     // Skip for now
                     OutlinedButton(
                       onPressed: authState.isLoading
@@ -265,6 +277,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (success && mounted) {
       Navigator.pop(context);
+    }
+  }
+
+  Future<void> _handleGitHubAuth() async {
+    final authState = context.read<AuthState>();
+    final success = await authState.signInWithGitHub();
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Complete GitHub sign-in and return to the app.')),
+      );
     }
   }
 

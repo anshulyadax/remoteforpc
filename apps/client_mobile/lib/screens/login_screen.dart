@@ -49,6 +49,17 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleGitHubLogin() async {
+    final authState = context.read<AppAuthState>();
+    final success = await authState.signInWithGitHub();
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Complete sign-in and return to the app.')),
+      );
+    }
+  }
+
   Future<void> _handleAnonymousLogin() async {
     final authState = context.read<AppAuthState>();
     final success = await authState.signInAnonymously();
@@ -285,6 +296,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: authState.isLoading ? null : _handleGoogleLogin,
                       icon: const Icon(Icons.login),
                       label: const Text('Continue with Google'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // GitHub Sign In
+                    OutlinedButton.icon(
+                      onPressed: authState.isLoading ? null : _handleGitHubLogin,
+                      icon: const Icon(Icons.code),
+                      label: const Text('Continue with GitHub'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),

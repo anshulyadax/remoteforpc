@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../state/server_state.dart';
-import '../state/auth_state.dart';
+import '../state/auth_state.dart' as app_state;
 import 'login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -49,7 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: Consumer<ServerState>(
         builder: (context, serverState, child) {
-          return Consumer<AuthState>(
+          return Consumer<app_state.AuthState>(
             builder: (context, authState, child) {
               return ListView(
                 children: [
@@ -91,7 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildAccountInfo(AuthState authState) {
+  Widget _buildAccountInfo(app_state.AuthState authState) {
     final profile = authState.profile;
     return ListTile(
       leading: CircleAvatar(
@@ -100,11 +100,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             : null,
         child: profile?.avatarUrl == null
             ? Text(
-                (profile?.username ?? authState.user?.email ?? 'U')[0].toUpperCase(),
+                (profile?.displayName ?? authState.user?.email ?? 'U')[0].toUpperCase(),
               )
             : null,
       ),
-      title: Text(profile?.username ?? authState.user?.email ?? 'User'),
+      title: Text(profile?.displayName ?? authState.user?.email ?? 'User'),
       subtitle: Text(authState.user?.email ?? ''),
       trailing: IconButton(
         icon: const Icon(Icons.edit),
@@ -113,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildChangePasswordTile(AuthState authState) {
+  Widget _buildChangePasswordTile(app_state.AuthState authState) {
     return ListTile(
       leading: const Icon(Icons.lock_reset),
       title: const Text('Change Password'),
@@ -122,7 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSignOutTile(AuthState authState) {
+  Widget _buildSignOutTile(app_state.AuthState authState) {
     return ListTile(
       leading: const Icon(Icons.logout, color: Colors.red),
       title: const Text('Sign Out', style: TextStyle(color: Colors.red)),
@@ -169,12 +169,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showEditProfileDialog(AuthState authState) {
-    final usernameController = TextEditingController(
-      text: authState.profile?.username,
-    );
-    final fullNameController = TextEditingController(
-      text: authState.profile?.fullName,
+  void _showEditProfileDialog(app_state.AuthState authState) {
+    final displayNameController = TextEditingController(
+      text: authState.profile?.displayName,
     );
 
     showDialog(
@@ -185,17 +182,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: usernameController,
+              controller: displayNameController,
               decoration: const InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: fullNameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
+                labelText: 'Display Name',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -209,8 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           FilledButton(
             onPressed: () async {
               final success = await authState.updateProfile(
-                username: usernameController.text.trim(),
-                fullName: fullNameController.text.trim(),
+                displayName: displayNameController.text.trim(),
               );
 
               if (context.mounted) {
@@ -233,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showChangePasswordDialog(AuthState authState) {
+  void _showChangePasswordDialog(app_state.AuthState authState) {
     final passwordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
 

@@ -5,7 +5,7 @@ import 'package:remote_protocol/remote_protocol.dart';
 /// Authentication state manager
 class AuthState extends ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
-  final ProfileService _profileService = ProfileService();
+  late final ProfileService _profileService = ProfileService(_supabase);
   
   User? _user;
   UserProfile? _profile;
@@ -48,7 +48,7 @@ class AuthState extends ChangeNotifier {
     if (_user == null) return;
 
     try {
-      _profile = await _profileService.getProfile(_user!.id);
+      _profile = await _profileService.fetchProfile(_user!.id);
       notifyListeners();
     } catch (e) {
       print('Error loading profile: $e');
@@ -100,7 +100,7 @@ class AuthState extends ChangeNotifier {
         // Create profile
         await _profileService.createProfile(
           userId: _user!.id,
-          username: username,
+          displayName: email.split('@')[0], // Use email prefix as initial display name
           email: email,
         );
         
@@ -134,10 +134,28 @@ class AuthState extends ChangeNotifier {
     }
   }
 
+  /// Sign in / sign up with GitHub OAuth
+  Future<bool> signInWithGitHub() async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.github,
+        redirectTo: SupabaseConfig.redirectUrl,
+      );
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _error = _formatError(e);
+      _setLoading(false);
+      return false;
+    }
+  }
+
   /// Update user profile
   Future<bool> updateProfile({
-    String? username,
-    String? fullName,
+    String? displayName,
     String? avatarUrl,
   }) async {
     if (_user == null || _profile == null) return false;
@@ -148,8 +166,7 @@ class AuthState extends ChangeNotifier {
     try {
       await _profileService.updateProfile(
         userId: _user!.id,
-        username: username,
-        fullName: fullName,
+        displayName: displayName,
         avatarUrl: avatarUrl,
       );
 
