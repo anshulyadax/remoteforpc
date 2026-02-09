@@ -201,9 +201,27 @@ class AccountSettingsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
-                        child: Text(
-                          authState.errorMessage!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: Theme.of(context).colorScheme.onErrorContainer,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                authState.errorMessage!,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onErrorContainer,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: authState.clearError,
+                              iconSize: 20,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -226,8 +244,12 @@ class AccountSettingsScreen extends StatelessWidget {
                                 )
                               : null,
                         ),
-                        title: Text(authState.userProfile?.displayName ?? email ?? 'Anonymous'),
-                        subtitle: Text(user?.isAnonymous == true ? 'Anonymous (LAN only)' : 'Signed in'),
+                        title: Text(
+                          (displayName != null && displayName.trim().isNotEmpty)
+                              ? displayName
+                              : (email ?? 'Anonymous'),
+                        ),
+                        subtitle: Text(user?.isAnonymous == true ? 'Anonymous (LAN only)' : (email ?? 'Signed in')),
                         trailing: IconButton(
                           icon: const Icon(Icons.edit_outlined),
                           onPressed: (authState.isLoading || user?.isAnonymous == true)
@@ -250,36 +272,6 @@ class AccountSettingsScreen extends StatelessWidget {
                           subtitle: Text(authState.userProfile!.phoneNumber!),
                         ),
                       ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                Card(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.account_circle),
-                        title: Text(
-                          (displayName != null && displayName.trim().isNotEmpty)
-                              ? displayName
-                              : (email ?? 'Anonymous'),
-                        ),
-                        subtitle: Text(user?.isAnonymous == true ? 'Anonymous (LAN only)' : (email ?? 'Signed in')),
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        leading: const Icon(Icons.edit_outlined),
-                        title: const Text('Edit profile'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: authState.isLoading
-                            ? null
-                            : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const ProfileEditScreen()),
-                                );
-                              },
-                      ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.badge_outlined),

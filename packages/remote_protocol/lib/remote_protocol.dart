@@ -13,6 +13,7 @@ export 'utils/coordinate_transform.dart';
 
 // Auth
 export 'auth/supabase_auth_service.dart';
+export 'auth/profile_service.dart';
 
 // Relay
 export 'relay/supabase_relay.dart';

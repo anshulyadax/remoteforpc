@@ -3,8 +3,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:remote_protocol/remote_protocol.dart';
 
 /// Authentication state management
+/// 
+/// This class manages user authentication and profile data using Supabase.
+/// It handles:
+/// - Email/password authentication
+/// - OAuth (Google, etc.)
+/// - Anonymous authentication (for LAN-only mode)
+/// - Profile management (stored in Supabase profiles table)
+/// - Session management
+/// 
+/// Profile data is stored in the Supabase 'profiles' table and synced with
+/// user metadata for consistency. The ProfileService handles all database
+/// operations for profiles.
 class AppAuthState extends ChangeNotifier {
   final SupabaseAuthService _authService;
+  final ProfileService _profileService;
   User? _currentUser;
   Session? _currentSession;
   UserProfile? _userProfile;
@@ -12,7 +25,9 @@ class AppAuthState extends ChangeNotifier {
   String? _errorMessage;
   bool _requiresEmailConfirmation = false;
 
-  AppAuthState() : _authService = SupabaseAuthService(Supabase.instance.client) {
+  AppAuthState() 
+      : _authService = SupabaseAuthService(Supabase.instance.client),
+        _profileService = ProfileService(Supabase.instance.client) {
     _currentUser = _authService.currentUser;
     _currentSession = _authService.currentSession;
     _listenToAuthChanges();
@@ -81,16 +96,28 @@ class AppAuthState extends ChangeNotifier {
 
       _currentSession = response.session;
       _currentUser = response.session?.user;
+      
+      if (_currentUser != null) {
+        await _loadUserProfile();
+      }
+      
       _isLoading = false;
       notifyListeners();
       return true;
     } on AuthException catch (e) {
-      _errorMessage = e.message;
+      if (e.message.toLowerCase().contains('invalid') || 
+          e.message.toLowerCase().contains('credentials')) {
+        _errorMessage = 'Invalid email or password. Please try again.';
+      } else if (e.message.toLowerCase().contains('email not confirmed')) {
+        _errorMessage = 'Please confirm your email before signing in.';
+      } else {
+        _errorMessage = e.message;
+      }
       _isLoading = false;
       notifyListeners();
       return false;
     } catch (e) {
-      _errorMessage = 'An unexpected error occurred';
+      _errorMessage = 'An unexpected error occurred during sign in';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -112,20 +139,29 @@ class AppAuthState extends ChangeNotifier {
 
       _currentSession = response.session;
       _currentUser = response.session?.user;
+      
       if (response.session == null) {
         // Common when email confirmation is required
         _requiresEmailConfirmation = true;
+      } else if (_currentUser != null) {
+        // User signed up and got a session, ensure profile exists
+        await _loadUserProfile();
       }
+      
       _isLoading = false;
       notifyListeners();
       return true;
     } on AuthException catch (e) {
-      _errorMessage = e.message;
+      if (e.message.toLowerCase().contains('already registered')) {
+        _errorMessage = 'This email is already registered. Please sign in instead.';
+      } else {
+        _errorMessage = e.message;
+      }
       _isLoading = false;
       notifyListeners();
       return false;
     } catch (e) {
-      _errorMessage = 'An unexpected error occurred';
+      _errorMessage = 'An unexpected error occurred during signup';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -284,19 +320,30 @@ class AppAuthState extends ChangeNotifier {
     if (_currentUser == null) return;
 
     try {
-      final metadata = _currentUser!.userMetadata;
-      _userProfile = UserProfile(
-        id: _currentUser!.id,
+      // Fetch profile from database
+      _userProfile = await _profileService.ensureProfile(
+        userId: _currentUser!.id,
         email: _currentUser!.email,
-        displayName: metadata?['display_name'] as String?,
-        avatarUrl: metadata?['avatar_url'] as String?,
-        phoneNumber: metadata?['phone_number'] as String?,
-        createdAt: DateTime.tryParse(_currentUser!.createdAt),
-        metadata: metadata,
       );
       notifyListeners();
     } catch (e) {
       print('Failed to load user profile: $e');
+      // Fallback to metadata if database fetch fails
+      try {
+        final metadata = _currentUser!.userMetadata;
+        _userProfile = UserProfile(
+          id: _currentUser!.id,
+          email: _currentUser!.email,
+          displayName: metadata?['display_name'] as String?,
+          avatarUrl: metadata?['avatar_url'] as String?,
+          phoneNumber: metadata?['phone_number'] as String?,
+          createdAt: DateTime.tryParse(_currentUser!.createdAt),
+          metadata: metadata,
+        );
+        notifyListeners();
+      } catch (e) {
+        print('Failed to load profile from metadata: $e');
+      }
     }
   }
 
@@ -311,22 +358,51 @@ class AppAuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final metadata = <String, dynamic>{
-        ..._currentUser?.userMetadata ?? {},
-      };
+      if (_currentUser == null) {
+        _errorMessage = 'No user logged in';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
 
-      if (displayName != null) metadata['display_name'] = displayName;
-      if (avatarUrl != null) metadata['avatar_url'] = avatarUrl;
-      if (phoneNumber != null) metadata['phone_number'] = phoneNumber;
-
-      await Supabase.instance.client.auth.updateUser(
-        UserAttributes(data: metadata),
+      // Update profile in database
+      final updatedProfile = await _profileService.updateProfile(
+        userId: _currentUser!.id,
+        displayName: displayName,
+        avatarUrl: avatarUrl,
+        phoneNumber: phoneNumber,
       );
 
-      await _loadUserProfile();
-      _isLoading = false;
-      notifyListeners();
-      return true;
+      if (updatedProfile != null) {
+        _userProfile = updatedProfile;
+        
+        // Also update user metadata for consistency
+        final metadata = <String, dynamic>{
+          ..._currentUser?.userMetadata ?? {},
+        };
+
+        if (displayName != null) metadata['display_name'] = displayName;
+        if (avatarUrl != null) metadata['avatar_url'] = avatarUrl;
+        if (phoneNumber != null) metadata['phone_number'] = phoneNumber;
+
+        try {
+          await Supabase.instance.client.auth.updateUser(
+            UserAttributes(data: metadata),
+          );
+        } catch (e) {
+          print('Warning: Failed to update user metadata: $e');
+          // Continue anyway since database was updated
+        }
+
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = 'Failed to update profile';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
     } on AuthException catch (e) {
       _errorMessage = e.message;
       _isLoading = false;
